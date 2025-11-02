@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { MockDatabase } from '@/lib/mock-database'
+import { InMemoryDatabase } from '@/lib/in-memory-db'
 import { v4 as uuidv4 } from 'uuid'
 
 export async function POST(request: NextRequest) {
@@ -20,7 +20,7 @@ export async function POST(request: NextRequest) {
     for (const item of cartItems) {
       try {
         // Check if product exists and has sufficient stock
-        const product = await MockDatabase.findProduct(item.productId)
+        const product = await InMemoryDatabase.findProduct(item.productId)
 
         if (!product) {
           throw new Error(`Product ${item.productId} not found`)
@@ -33,10 +33,10 @@ export async function POST(request: NextRequest) {
         const previousStock = product.inStock
 
         // Update product stock
-        const updatedProduct = await MockDatabase.updateProductStock(item.productId, item.quantity)
+        const updatedProduct = await InMemoryDatabase.updateProductStock(item.productId, item.quantity)
 
         // Create sale record
-        const sale = await MockDatabase.createSale({
+        const sale = await InMemoryDatabase.createSale({
           productId: item.productId,
           productNameSnapshot: item.productName,
           productCodeSnapshot: item.productCode,
@@ -47,22 +47,13 @@ export async function POST(request: NextRequest) {
         })
 
         // Create transaction record
-        const transaction = await MockDatabase.createTransaction({
+        const transaction = await InMemoryDatabase.createTransaction({
           type: 'SALE',
           description: `Sale of ${item.productName} (${item.quantity} units)`,
           amount: item.sellTotal,
           productId: item.productId,
           quantity: item.quantity,
         })
-
-        // Create low stock alert if needed
-        if (updatedProduct.inStock <= updatedProduct.lowStockThreshold && updatedProduct.inStock > 0) {
-          await MockDatabase.createAlert({
-            productId: item.productId,
-            type: 'LOW_STOCK',
-            details: `Low stock alert for ${item.productName}. Current stock: ${updatedProduct.inStock}`,
-          })
-        }
 
         results.push({
           productId: item.productId,

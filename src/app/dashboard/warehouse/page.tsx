@@ -38,8 +38,13 @@ export default function WarehousePage() {
   const fetchProducts = async () => {
     setLoading(true)
     try {
-      // Mock data for testing - replace with actual database call when database is set up
-      const mockProducts: ProductWithRelations[] = [
+      // Fetch products from real database
+      const response = await fetch('/api/products')
+      if (!response.ok) {
+        throw new Error('Failed to fetch products')
+      }
+      const data = await response.json()
+      const products = data.products || []
         {
           id: '1',
           name: 'Laptop Dell XPS 15',

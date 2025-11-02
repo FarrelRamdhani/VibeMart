@@ -25,8 +25,49 @@ export default function StorePage() {
   const fetchProducts = async () => {
     setLoading(true)
     try {
-      // Mock data for testing - same as warehouse but only items with stock > 0
-      const mockProducts: ProductWithRelations[] = [
+      // Get products from shared mock database
+      const mockDbProducts = await import('@/lib/mock-database').then(m => m.MockDatabase.getAllProducts())
+      
+      // Product details mapping
+      const productDetails: { [key: string]: any } = {
+        '1': { name: 'Laptop Dell XPS 15', description: 'High-performance laptop with 4K display', manufacturer: 'Dell', productCode: 100001, buyPrice: 1200.00, categoryId: 'electronics', locationId: 'loc1', category: { id: 'electronics', name: 'Electronics' }, location: { id: 'loc1', warehouseCode: 'WH-01', aisle: 'A', rack: '1', shelf: '1', bin: '1' } },
+        '2': { name: 'Wireless Mouse Logitech', description: 'Ergonomic wireless mouse', manufacturer: 'Logitech', productCode: 100002, buyPrice: 25.00, categoryId: 'electronics', locationId: 'loc2', category: { id: 'electronics', name: 'Electronics' }, location: { id: 'loc2', warehouseCode: 'WH-01', aisle: 'A', rack: '1', shelf: '1', bin: '2' } },
+        '3': { name: 'Mechanical Keyboard', description: 'RGB mechanical gaming keyboard', manufacturer: 'Corsair', productCode: 100003, buyPrice: 89.99, categoryId: 'electronics', locationId: 'loc3', category: { id: 'electronics', name: 'Electronics' }, location: { id: 'loc3', warehouseCode: 'WH-01', aisle: 'A', rack: '1', shelf: '2', bin: '1' } },
+        '4': { name: 'USB-C Hub', description: '7-in-1 USB-C hub with HDMI', manufacturer: 'Anker', productCode: 100004, buyPrice: 45.00, categoryId: 'electronics', locationId: 'loc4', category: { id: 'electronics', name: 'Electronics' }, location: { id: 'loc4', warehouseCode: 'WH-01', aisle: 'A', rack: '1', shelf: '2', bin: '2' } },
+        '5': { name: 'Monitor 27" 4K', description: '27-inch 4K UHD monitor', manufacturer: 'LG', productCode: 100005, buyPrice: 350.00, categoryId: 'electronics', locationId: 'loc5', category: { id: 'electronics', name: 'Electronics' }, location: { id: 'loc5', warehouseCode: 'WH-01', aisle: 'A', rack: '2', shelf: '1', bin: '1' } },
+        '8': { name: 'Desk Lamp LED', description: 'Adjustable LED desk lamp', manufacturer: 'Philips', productCode: 100008, buyPrice: 35.00, categoryId: 'furniture', locationId: 'loc8', category: { id: 'furniture', name: 'Furniture' }, location: { id: 'loc8', warehouseCode: 'WH-01', aisle: 'B', rack: '1', shelf: '2', bin: '1' } },
+        '11': { name: 'Notebook Set', description: 'Premium notebook set with pens', manufacturer: 'Moleskine', productCode: 100011, buyPrice: 15.00, categoryId: 'office-supplies', locationId: 'loc11', category: { id: 'office-supplies', name: 'Office Supplies' }, location: { id: 'loc11', warehouseCode: 'WH-01', aisle: 'C', rack: '1', shelf: '1', bin: '2' } },
+        '12': { name: 'Pen Set Premium', description: 'Executive pen set', manufacturer: 'Montblanc', productCode: 100012, buyPrice: 75.00, categoryId: 'office-supplies', locationId: 'loc12', category: { id: 'office-supplies', name: 'Office Supplies' }, location: { id: 'loc12', warehouseCode: 'WH-01', aisle: 'C', rack: '1', shelf: '2', bin: '1' } },
+        '13': { name: 'Printer Paper A4', description: 'High-quality A4 printer paper', manufacturer: 'HP', productCode: 100013, buyPrice: 12.00, categoryId: 'office-supplies', locationId: 'loc13', category: { id: 'office-supplies', name: 'Office Supplies' }, location: { id: 'loc13', warehouseCode: 'WH-01', aisle: 'C', rack: '1', shelf: '2', bin: '2' } },
+        '14': { name: 'Stapler Heavy Duty', description: 'Heavy-duty stapler for office use', manufacturer: 'Swingline', productCode: 100014, buyPrice: 18.00, categoryId: 'office-supplies', locationId: 'loc14', category: { id: 'office-supplies', name: 'Office Supplies' }, location: { id: 'loc14', warehouseCode: 'WH-01', aisle: 'C', rack: '2', shelf: '1', bin: '1' } },
+        '15': { name: 'Coffee Maker', description: 'Single-serve coffee maker', manufacturer: 'Keurig', productCode: 100015, buyPrice: 89.00, categoryId: 'appliances', locationId: 'loc15', category: { id: 'appliances', name: 'Appliances' }, location: { id: 'loc15', warehouseCode: 'WH-01', aisle: 'D', rack: '1', shelf: '1', bin: '1' } },
+        '17': { name: 'Microwave Compact', description: 'Compact microwave oven', manufacturer: 'Panasonic', productCode: 100017, buyPrice: 95.00, categoryId: 'appliances', locationId: 'loc17', category: { id: 'appliances', name: 'Appliances' }, location: { id: 'loc17', warehouseCode: 'WH-01', aisle: 'D', rack: '1', shelf: '2', bin: '1' } },
+        '19': { name: 'Security Camera', description: 'Wireless security camera system', manufacturer: 'Ring', productCode: 100019, buyPrice: 199.00, categoryId: 'security', locationId: 'loc19', category: { id: 'security', name: 'Security' }, location: { id: 'loc19', warehouseCode: 'WH-01', aisle: 'E', rack: '1', shelf: '1', bin: '1' } }
+      }
+
+      const mockProducts: ProductWithRelations[] = mockDbProducts.map(product => ({
+        id: product.id,
+        name: product.name,
+        description: productDetails[product.id]?.description || '',
+        manufacturer: productDetails[product.id]?.manufacturer || 'Unknown',
+        productCode: productDetails[product.id]?.productCode || 0,
+        codeSource: 'AUTO',
+        latestEntryDate: new Date(),
+        expirationDate: null,
+        inStock: product.inStock,
+        categoryId: productDetails[product.id]?.categoryId || '',
+        lowStockWarning: product.inStock <= product.lowStockThreshold,
+        lowStockThreshold: product.lowStockThreshold,
+        buyPrice: productDetails[product.id]?.buyPrice || 0,
+        locationId: productDetails[product.id]?.locationId || '',
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        category: productDetails[product.id]?.category || { id: '', name: 'Unknown' },
+        location: productDetails[product.id]?.location || { id: '', warehouseCode: '', aisle: '', rack: '', shelf: '', bin: '' },
+        receipts: [],
+        sales: [],
+        alerts: []
+      }))
         {
           id: '1',
           name: 'Laptop Dell XPS 15',

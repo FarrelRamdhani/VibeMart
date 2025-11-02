@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { MockDatabase } from '@/lib/mock-database'
+import { InMemoryDatabase } from '@/lib/in-memory-db'
 
 export async function GET(request: NextRequest) {
   try {
@@ -13,8 +13,8 @@ export async function GET(request: NextRequest) {
     const endDateFilter = endDate ? new Date(endDate) : undefined
 
     const [sales, summary] = await Promise.all([
-      MockDatabase.getSales(limit, (page - 1) * limit),
-      MockDatabase.getSalesSummary(startDateFilter, endDateFilter),
+      InMemoryDatabase.getSales(limit, (page - 1) * limit),
+      InMemoryDatabase.getSalesSummary(startDateFilter, endDateFilter),
     ])
 
     // Filter sales by date range

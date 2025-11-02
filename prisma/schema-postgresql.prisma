@@ -1,12 +1,12 @@
-// This is your Prisma schema file for SQLite,
-// learn more about it in docs: https://pris.ly/d/prisma-schema
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
 
 generator client {
   provider = "prisma-client-js"
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
@@ -14,7 +14,7 @@ model User {
   id        String   @id @default(uuid())
   username  String   @unique
   password  String
-  role      String   // BOOKKEEPER, STORE_CLERK, WAREHOUSE_CLERK
+  role      UserRole
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -45,22 +45,22 @@ model Location {
 }
 
 model Product {
-  id                  String   @id
+  id                  String     @id
   name                String
   description         String?
   manufacturer        String?
-  productCode         Int      @unique
-  codeSource          String   // AUTO, MANUAL
-  latestEntryDate    DateTime
-  expirationDate     DateTime?
-  inStock            Int      @default(0)
-  lowStockWarning    Boolean  @default(false)
-  lowStockThreshold  Int      @default(20)
+  productCode         Int        @unique
+  codeSource          CodeSource
+  latestEntryDate    DateTime   @db.Date
+  expirationDate     DateTime?  @db.Date
+  inStock            Int        @default(0)
+  lowStockWarning    Boolean    @default(false)
+  lowStockThreshold  Int        @default(20)
   buyPrice           Decimal
   locationId         String
   categoryId         String
-  createdAt          DateTime @default(now())
-  updatedAt          DateTime @updatedAt
+  createdAt          DateTime   @default(now())
+  updatedAt          DateTime   @updatedAt
 
   // Relations
   category   Category   @relation(fields: [categoryId], references: [id])
@@ -73,13 +73,13 @@ model Product {
 }
 
 model Receipt {
-  id            String   @id @default(uuid())
+  id            String    @id @default(uuid())
   productId     String
   unitBuyPrice  Decimal
   quantity      Int
   totalBuyPrice Decimal
-  receivedDate  DateTime
-  createdAt     DateTime @default(now())
+  receivedDate  DateTime  @db.Date
+  createdAt     DateTime  @default(now())
 
   // Relations
   product Product @relation(fields: [productId], references: [id])
@@ -88,13 +88,13 @@ model Receipt {
 }
 
 model Sale {
-  id                   String   @id @default(uuid())
+  id                   String    @id @default(uuid())
   productId            String
   productNameSnapshot  String
   productCodeSnapshot  Int
   sellPrice            Decimal
   sellTax              Decimal
-  sellDate             DateTime
+  sellDate             DateTime  @db.Date
   quantity             Int
   sellTotal            Decimal
 
@@ -105,11 +105,11 @@ model Sale {
 }
 
 model Alert {
-  id        String   @id @default(uuid())
+  id        String    @id @default(uuid())
   productId String
-  type      String   // LOW_STOCK
+  type      AlertType
   details   String
-  createdAt DateTime @default(now())
+  createdAt DateTime  @default(now())
 
   // Relations
   product Product @relation(fields: [productId], references: [id])
@@ -118,13 +118,36 @@ model Alert {
 }
 
 model Transaction {
-  id          String   @id @default(uuid())
-  type        String   // SALE, PURCHASE, INVENTORY_ADJUSTMENT, EXPENSE, REVENUE
+  id          String          @id @default(uuid())
+  type        TransactionType
   description String
   amount      Decimal
   productId   String?
   quantity    Int?
-  createdAt   DateTime @default(now())
+  createdAt   DateTime        @default(now())
 
   @@map("transactions")
+}
+
+enum UserRole {
+  BOOKKEEPER
+  STORE_CLERK
+  WAREHOUSE_CLERK
+}
+
+enum CodeSource {
+  AUTO
+  MANUAL
+}
+
+enum AlertType {
+  LOW_STOCK
+}
+
+enum TransactionType {
+  SALE
+  PURCHASE
+  INVENTORY_ADJUSTMENT
+  EXPENSE
+  REVENUE
 }
