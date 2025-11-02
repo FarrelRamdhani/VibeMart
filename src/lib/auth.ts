@@ -36,23 +36,16 @@ export async function authenticateUser(username: string, password: string): Prom
     }
   ]
 
-  console.log('Attempting login with:', { username, password })
-  
   const user = credentials.find(cred => cred.username === username)
   
   if (!user) {
-    console.log('User not found:', username)
     return null
   }
-
-  console.log('Found user:', user)
-  console.log('Password comparison:', { input: password, expected: user.password, match: password === user.password })
 
   // Direct password comparison for demo purposes
   const isPasswordValid = password === user.password
   
   if (isPasswordValid) {
-    console.log('Authentication successful')
     return {
       id: user.username,
       username: user.username,
@@ -60,7 +53,6 @@ export async function authenticateUser(username: string, password: string): Prom
     }
   }
 
-  console.log('Password validation failed')
   return null
 }
 

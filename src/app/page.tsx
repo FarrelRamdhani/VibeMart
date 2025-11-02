@@ -21,10 +21,7 @@ export default function LoginPage() {
   const onFinish = async (values: { username: string; password: string; role: UserRole }) => {
     setLoading(true)
     try {
-      console.log('Login attempt:', values)
       const user = await authenticateUser(values.username, values.password)
-      
-      console.log('Authentication result:', user)
       
       if (user && user.role === values.role) {
         const token = generateToken(user)
@@ -40,7 +37,6 @@ export default function LoginPage() {
         }
       }
     } catch (error) {
-      console.error('Login error:', error)
       message.error('Login failed. Please try again.')
     } finally {
       setLoading(false)
