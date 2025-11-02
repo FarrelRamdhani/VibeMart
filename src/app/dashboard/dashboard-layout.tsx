@@ -133,9 +133,10 @@ export default function DashboardLayout({
           style={{
             margin: '24px 16px',
             padding: 24,
-            minHeight: 280,
+            height: 'calc(100vh - 112px)',
             background: '#fff',
             borderRadius: 6,
+            overflow: 'auto',
           }}
         >
           {children}
