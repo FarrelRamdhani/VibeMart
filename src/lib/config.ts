@@ -1,7 +1,3 @@
-import * as yaml from 'js-yaml'
-import fs from 'fs'
-import path from 'path'
-
 export interface CompanyConfig {
   name: string
   address: string
@@ -30,18 +26,29 @@ export interface Config {
   business: BusinessConfig
 }
 
-let config: Config | null = null
+// Browser-compatible config - hardcoded values from config.yml
+const defaultConfig: Config = {
+  company: {
+    name: "VibeMart Retail Store",
+    address: "123 Main Street, City, State 12345",
+    phone: "+1 (555) 123-4567",
+    email: "info@vibemart.com",
+    website: "www.vibemart.com"
+  },
+  receipt: {
+    header: "VIBE MART",
+    footer: "Thank you for shopping with us!",
+    tax_rate: 0.06,
+    currency: "USD",
+    currency_symbol: "$"
+  },
+  business: {
+    default_low_stock_threshold: 50,
+    auto_product_code_start: 100000,
+    warehouse_code: "WH-01"
+  }
+}
 
 export function getConfig(): Config {
-  if (!config) {
-    try {
-      const configPath = path.join(process.cwd(), 'config.yml')
-      const fileContents = fs.readFileSync(configPath, 'utf8')
-      config = yaml.load(fileContents) as Config
-    } catch (error) {
-      console.error('Error loading config:', error)
-      throw new Error('Failed to load configuration')
-    }
-  }
-  return config
+  return defaultConfig
 }

@@ -8,7 +8,7 @@ import {
   BookOutlined, 
   ShopOutlined, 
   ShoppingCartOutlined, 
-  WarehouseOutlined,
+  InboxOutlined,
   UserOutlined,
   LogoutOutlined
 } from '@ant-design/icons'
@@ -50,7 +50,7 @@ export default function DashboardLayout({
     if (user?.role === UserRole.WAREHOUSE_CLERK) {
       items.push({
         key: '/dashboard/warehouse',
-        icon: <WarehouseOutlined />,
+        icon: <InboxOutlined />,
         label: 'Warehouse',
       })
     }

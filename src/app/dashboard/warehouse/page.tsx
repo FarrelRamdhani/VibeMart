@@ -38,51 +38,628 @@ export default function WarehousePage() {
   const fetchProducts = async () => {
     setLoading(true)
     try {
-      const where: any = {}
+      // Mock data for testing - replace with actual database call when database is set up
+      const mockProducts: ProductWithRelations[] = [
+        {
+          id: '1',
+          name: 'Laptop Dell XPS 15',
+          description: 'High-performance laptop with 4K display',
+          manufacturer: 'Dell',
+          productCode: 100001,
+          codeSource: 'AUTO',
+          latestEntryDate: new Date(),
+          expirationDate: null,
+          inStock: 15,
+          categoryId: 'electronics',
+          lowStockWarning: false,
+          lowStockThreshold: 20,
+          buyPrice: 1200.00,
+          locationId: 'loc1',
+          createdAt: new Date(),
+          updatedAt: new Date(),
+          category: { id: 'electronics', name: 'Electronics' },
+          location: { 
+            id: 'loc1', 
+            warehouseCode: 'WH-01', 
+            aisle: 'A', 
+            rack: '1', 
+            shelf: '1', 
+            bin: '1' 
+          },
+          receipts: [],
+          sales: [],
+          alerts: []
+        },
+        {
+          id: '2',
+          name: 'Wireless Mouse Logitech',
+          description: 'Ergonomic wireless mouse',
+          manufacturer: 'Logitech',
+          productCode: 100002,
+          codeSource: 'AUTO',
+          latestEntryDate: new Date(),
+          expirationDate: null,
+          inStock: 50,
+          categoryId: 'electronics',
+          lowStockWarning: false,
+          lowStockThreshold: 20,
+          buyPrice: 25.00,
+          locationId: 'loc2',
+          createdAt: new Date(),
+          updatedAt: new Date(),
+          category: { id: 'electronics', name: 'Electronics' },
+          location: { 
+            id: 'loc2', 
+            warehouseCode: 'WH-01', 
+            aisle: 'A', 
+            rack: '1', 
+            shelf: '1', 
+            bin: '2' 
+          },
+          receipts: [],
+          sales: [],
+          alerts: []
+        },
+        {
+          id: '3',
+          name: 'Mechanical Keyboard',
+          description: 'RGB mechanical gaming keyboard',
+          manufacturer: 'Corsair',
+          productCode: 100003,
+          codeSource: 'AUTO',
+          latestEntryDate: new Date(),
+          expirationDate: null,
+          inStock: 25,
+          categoryId: 'electronics',
+          lowStockWarning: false,
+          lowStockThreshold: 20,
+          buyPrice: 89.99,
+          locationId: 'loc3',
+          createdAt: new Date(),
+          updatedAt: new Date(),
+          category: { id: 'electronics', name: 'Electronics' },
+          location: { 
+            id: 'loc3', 
+            warehouseCode: 'WH-01', 
+            aisle: 'A', 
+            rack: '1', 
+            shelf: '2', 
+            bin: '1' 
+          },
+          receipts: [],
+          sales: [],
+          alerts: []
+        },
+        {
+          id: '4',
+          name: 'USB-C Hub',
+          description: '7-in-1 USB-C hub with HDMI',
+          manufacturer: 'Anker',
+          productCode: 100004,
+          codeSource: 'AUTO',
+          latestEntryDate: new Date(),
+          expirationDate: null,
+          inStock: 30,
+          categoryId: 'electronics',
+          lowStockWarning: false,
+          lowStockThreshold: 20,
+          buyPrice: 45.00,
+          locationId: 'loc4',
+          createdAt: new Date(),
+          updatedAt: new Date(),
+          category: { id: 'electronics', name: 'Electronics' },
+          location: { 
+            id: 'loc4', 
+            warehouseCode: 'WH-01', 
+            aisle: 'A', 
+            rack: '1', 
+            shelf: '2', 
+            bin: '2' 
+          },
+          receipts: [],
+          sales: [],
+          alerts: []
+        },
+        {
+          id: '5',
+          name: 'Monitor 27" 4K',
+          description: '27-inch 4K UHD monitor',
+          manufacturer: 'LG',
+          productCode: 100005,
+          codeSource: 'AUTO',
+          latestEntryDate: new Date(),
+          expirationDate: null,
+          inStock: 10,
+          categoryId: 'electronics',
+          lowStockWarning: true,
+          lowStockThreshold: 20,
+          buyPrice: 350.00,
+          locationId: 'loc5',
+          createdAt: new Date(),
+          updatedAt: new Date(),
+          category: { id: 'electronics', name: 'Electronics' },
+          location: { 
+            id: 'loc5', 
+            warehouseCode: 'WH-01', 
+            aisle: 'A', 
+            rack: '2', 
+            shelf: '1', 
+            bin: '1' 
+          },
+          receipts: [],
+          sales: [],
+          alerts: []
+        },
+        {
+          id: '6',
+          name: 'Office Chair Ergonomic',
+          description: 'High-back ergonomic office chair',
+          manufacturer: 'Herman Miller',
+          productCode: 100006,
+          codeSource: 'AUTO',
+          latestEntryDate: new Date(),
+          expirationDate: null,
+          inStock: 8,
+          categoryId: 'furniture',
+          lowStockWarning: true,
+          lowStockThreshold: 20,
+          buyPrice: 450.00,
+          locationId: 'loc6',
+          createdAt: new Date(),
+          updatedAt: new Date(),
+          category: { id: 'furniture', name: 'Furniture' },
+          location: { 
+            id: 'loc6', 
+            warehouseCode: 'WH-01', 
+            aisle: 'B', 
+            rack: '1', 
+            shelf: '1', 
+            bin: '1' 
+          },
+          receipts: [],
+          sales: [],
+          alerts: []
+        },
+        {
+          id: '7',
+          name: 'Standing Desk',
+          description: 'Electric height-adjustable standing desk',
+          manufacturer: 'Uplift',
+          productCode: 100007,
+          codeSource: 'AUTO',
+          latestEntryDate: new Date(),
+          expirationDate: null,
+          inStock: 5,
+          categoryId: 'furniture',
+          lowStockWarning: true,
+          lowStockThreshold: 20,
+          buyPrice: 600.00,
+          locationId: 'loc7',
+          createdAt: new Date(),
+          updatedAt: new Date(),
+          category: { id: 'furniture', name: 'Furniture' },
+          location: { 
+            id: 'loc7', 
+            warehouseCode: 'WH-01', 
+            aisle: 'B', 
+            rack: '1', 
+            shelf: '1', 
+            bin: '2' 
+          },
+          receipts: [],
+          sales: [],
+          alerts: []
+        },
+        {
+          id: '8',
+          name: 'Desk Lamp LED',
+          description: 'Adjustable LED desk lamp',
+          manufacturer: 'Philips',
+          productCode: 100008,
+          codeSource: 'AUTO',
+          latestEntryDate: new Date(),
+          expirationDate: null,
+          inStock: 40,
+          categoryId: 'furniture',
+          lowStockWarning: false,
+          lowStockThreshold: 20,
+          buyPrice: 35.00,
+          locationId: 'loc8',
+          createdAt: new Date(),
+          updatedAt: new Date(),
+          category: { id: 'furniture', name: 'Furniture' },
+          location: { 
+            id: 'loc8', 
+            warehouseCode: 'WH-01', 
+            aisle: 'B', 
+            rack: '1', 
+            shelf: '2', 
+            bin: '1' 
+          },
+          receipts: [],
+          sales: [],
+          alerts: []
+        },
+        {
+          id: '9',
+          name: 'File Cabinet 4-Drawer',
+          description: 'Vertical file cabinet with 4 drawers',
+          manufacturer: 'HON',
+          productCode: 100009,
+          codeSource: 'AUTO',
+          latestEntryDate: new Date(),
+          expirationDate: null,
+          inStock: 12,
+          categoryId: 'furniture',
+          lowStockWarning: true,
+          lowStockThreshold: 20,
+          buyPrice: 150.00,
+          locationId: 'loc9',
+          createdAt: new Date(),
+          updatedAt: new Date(),
+          category: { id: 'furniture', name: 'Furniture' },
+          location: { 
+            id: 'loc9', 
+            warehouseCode: 'WH-01', 
+            aisle: 'B', 
+            rack: '1', 
+            shelf: '2', 
+            bin: '2' 
+          },
+          receipts: [],
+          sales: [],
+          alerts: []
+        },
+        {
+          id: '10',
+          name: 'Whiteboard 4x8',
+          description: 'Large magnetic whiteboard',
+          manufacturer: 'Quartet',
+          productCode: 100010,
+          codeSource: 'AUTO',
+          latestEntryDate: new Date(),
+          expirationDate: null,
+          inStock: 6,
+          categoryId: 'office-supplies',
+          lowStockWarning: true,
+          lowStockThreshold: 20,
+          buyPrice: 120.00,
+          locationId: 'loc10',
+          createdAt: new Date(),
+          updatedAt: new Date(),
+          category: { id: 'office-supplies', name: 'Office Supplies' },
+          location: { 
+            id: 'loc10', 
+            warehouseCode: 'WH-01', 
+            aisle: 'C', 
+            rack: '1', 
+            shelf: '1', 
+            bin: '1' 
+          },
+          receipts: [],
+          sales: [],
+          alerts: []
+        },
+        {
+          id: '11',
+          name: 'Notebook Set',
+          description: 'Premium notebook set with pens',
+          manufacturer: 'Moleskine',
+          productCode: 100011,
+          codeSource: 'AUTO',
+          latestEntryDate: new Date(),
+          expirationDate: null,
+          inStock: 100,
+          categoryId: 'office-supplies',
+          lowStockWarning: false,
+          lowStockThreshold: 20,
+          buyPrice: 15.00,
+          locationId: 'loc11',
+          createdAt: new Date(),
+          updatedAt: new Date(),
+          category: { id: 'office-supplies', name: 'Office Supplies' },
+          location: { 
+            id: 'loc11', 
+            warehouseCode: 'WH-01', 
+            aisle: 'C', 
+            rack: '1', 
+            shelf: '1', 
+            bin: '2' 
+          },
+          receipts: [],
+          sales: [],
+          alerts: []
+        },
+        {
+          id: '12',
+          name: 'Pen Set Premium',
+          description: 'Executive pen set',
+          manufacturer: 'Montblanc',
+          productCode: 100012,
+          codeSource: 'AUTO',
+          latestEntryDate: new Date(),
+          expirationDate: null,
+          inStock: 20,
+          categoryId: 'office-supplies',
+          lowStockWarning: false,
+          lowStockThreshold: 20,
+          buyPrice: 75.00,
+          locationId: 'loc12',
+          createdAt: new Date(),
+          updatedAt: new Date(),
+          category: { id: 'office-supplies', name: 'Office Supplies' },
+          location: { 
+            id: 'loc12', 
+            warehouseCode: 'WH-01', 
+            aisle: 'C', 
+            rack: '1', 
+            shelf: '2', 
+            bin: '1' 
+          },
+          receipts: [],
+          sales: [],
+          alerts: []
+        },
+        {
+          id: '13',
+          name: 'Printer Paper A4',
+          description: 'High-quality A4 printer paper',
+          manufacturer: 'HP',
+          productCode: 100013,
+          codeSource: 'AUTO',
+          latestEntryDate: new Date(),
+          expirationDate: null,
+          inStock: 200,
+          categoryId: 'office-supplies',
+          lowStockWarning: false,
+          lowStockThreshold: 20,
+          buyPrice: 12.00,
+          locationId: 'loc13',
+          createdAt: new Date(),
+          updatedAt: new Date(),
+          category: { id: 'office-supplies', name: 'Office Supplies' },
+          location: { 
+            id: 'loc13', 
+            warehouseCode: 'WH-01', 
+            aisle: 'C', 
+            rack: '1', 
+            shelf: '2', 
+            bin: '2' 
+          },
+          receipts: [],
+          sales: [],
+          alerts: []
+        },
+        {
+          id: '14',
+          name: 'Stapler Heavy Duty',
+          description: 'Heavy-duty stapler for office use',
+          manufacturer: 'Swingline',
+          productCode: 100014,
+          codeSource: 'AUTO',
+          latestEntryDate: new Date(),
+          expirationDate: null,
+          inStock: 35,
+          categoryId: 'office-supplies',
+          lowStockWarning: false,
+          lowStockThreshold: 20,
+          buyPrice: 18.00,
+          locationId: 'loc14',
+          createdAt: new Date(),
+          updatedAt: new Date(),
+          category: { id: 'office-supplies', name: 'Office Supplies' },
+          location: { 
+            id: 'loc14', 
+            warehouseCode: 'WH-01', 
+            aisle: 'C', 
+            rack: '2', 
+            shelf: '1', 
+            bin: '1' 
+          },
+          receipts: [],
+          sales: [],
+          alerts: []
+        },
+        {
+          id: '15',
+          name: 'Coffee Maker',
+          description: 'Single-serve coffee maker',
+          manufacturer: 'Keurig',
+          productCode: 100015,
+          codeSource: 'AUTO',
+          latestEntryDate: new Date(),
+          expirationDate: null,
+          inStock: 15,
+          categoryId: 'appliances',
+          lowStockWarning: false,
+          lowStockThreshold: 20,
+          buyPrice: 89.00,
+          locationId: 'loc15',
+          createdAt: new Date(),
+          updatedAt: new Date(),
+          category: { id: 'appliances', name: 'Appliances' },
+          location: { 
+            id: 'loc15', 
+            warehouseCode: 'WH-01', 
+            aisle: 'D', 
+            rack: '1', 
+            shelf: '1', 
+            bin: '1' 
+          },
+          receipts: [],
+          sales: [],
+          alerts: []
+        },
+        {
+          id: '16',
+          name: 'Mini Fridge',
+          description: 'Compact mini refrigerator',
+          manufacturer: 'Danby',
+          productCode: 100016,
+          codeSource: 'AUTO',
+          latestEntryDate: new Date(),
+          expirationDate: null,
+          inStock: 7,
+          categoryId: 'appliances',
+          lowStockWarning: true,
+          lowStockThreshold: 20,
+          buyPrice: 180.00,
+          locationId: 'loc16',
+          createdAt: new Date(),
+          updatedAt: new Date(),
+          category: { id: 'appliances', name: 'Appliances' },
+          location: { 
+            id: 'loc16', 
+            warehouseCode: 'WH-01', 
+            aisle: 'D', 
+            rack: '1', 
+            shelf: '1', 
+            bin: '2' 
+          },
+          receipts: [],
+          sales: [],
+          alerts: []
+        },
+        {
+          id: '17',
+          name: 'Microwave Compact',
+          description: 'Compact microwave oven',
+          manufacturer: 'Panasonic',
+          productCode: 100017,
+          codeSource: 'AUTO',
+          latestEntryDate: new Date(),
+          expirationDate: null,
+          inStock: 10,
+          categoryId: 'appliances',
+          lowStockWarning: true,
+          lowStockThreshold: 20,
+          buyPrice: 95.00,
+          locationId: 'loc17',
+          createdAt: new Date(),
+          updatedAt: new Date(),
+          category: { id: 'appliances', name: 'Appliances' },
+          location: { 
+            id: 'loc17', 
+            warehouseCode: 'WH-01', 
+            aisle: 'D', 
+            rack: '1', 
+            shelf: '2', 
+            bin: '1' 
+          },
+          receipts: [],
+          sales: [],
+          alerts: []
+        },
+        {
+          id: '18',
+          name: 'Water Cooler',
+          description: 'Bottled water cooler dispenser',
+          manufacturer: 'Primo',
+          productCode: 100018,
+          codeSource: 'AUTO',
+          latestEntryDate: new Date(),
+          expirationDate: null,
+          inStock: 3,
+          categoryId: 'appliances',
+          lowStockWarning: true,
+          lowStockThreshold: 20,
+          buyPrice: 250.00,
+          locationId: 'loc18',
+          createdAt: new Date(),
+          updatedAt: new Date(),
+          category: { id: 'appliances', name: 'Appliances' },
+          location: { 
+            id: 'loc18', 
+            warehouseCode: 'WH-01', 
+            aisle: 'D', 
+            rack: '1', 
+            shelf: '2', 
+            bin: '2' 
+          },
+          receipts: [],
+          sales: [],
+          alerts: []
+        },
+        {
+          id: '19',
+          name: 'Security Camera',
+          description: 'Wireless security camera system',
+          manufacturer: 'Ring',
+          productCode: 100019,
+          codeSource: 'AUTO',
+          latestEntryDate: new Date(),
+          expirationDate: null,
+          inStock: 12,
+          categoryId: 'security',
+          lowStockWarning: true,
+          lowStockThreshold: 20,
+          buyPrice: 199.00,
+          locationId: 'loc19',
+          createdAt: new Date(),
+          updatedAt: new Date(),
+          category: { id: 'security', name: 'Security' },
+          location: { 
+            id: 'loc19', 
+            warehouseCode: 'WH-01', 
+            aisle: 'E', 
+            rack: '1', 
+            shelf: '1', 
+            bin: '1' 
+          },
+          receipts: [],
+          sales: [],
+          alerts: []
+        },
+        {
+          id: '20',
+          name: 'Smart Lock',
+          description: 'Keyless smart door lock',
+          manufacturer: 'August',
+          productCode: 100020,
+          codeSource: 'AUTO',
+          latestEntryDate: new Date(),
+          expirationDate: null,
+          inStock: 8,
+          categoryId: 'security',
+          lowStockWarning: true,
+          lowStockThreshold: 20,
+          buyPrice: 225.00,
+          locationId: 'loc20',
+          createdAt: new Date(),
+          updatedAt: new Date(),
+          category: { id: 'security', name: 'Security' },
+          location: { 
+            id: 'loc20', 
+            warehouseCode: 'WH-01', 
+            aisle: 'E', 
+            rack: '1', 
+            shelf: '1', 
+            bin: '2' 
+          },
+          receipts: [],
+          sales: [],
+          alerts: []
+        }
+      ]
+
+      // Filter based on search and category
+      let filteredProducts = mockProducts
 
       if (searchText) {
-        where.OR = [
-          { name: { contains: searchText, mode: 'insensitive' } },
-          { manufacturer: { contains: searchText, mode: 'insensitive' } },
-          { productCode: { equals: parseInt(searchText) || 0 } },
-        ]
+        filteredProducts = filteredProducts.filter(product =>
+          product.name.toLowerCase().includes(searchText.toLowerCase()) ||
+          product.manufacturer.toLowerCase().includes(searchText.toLowerCase()) ||
+          product.productCode.toString().includes(searchText)
+        )
       }
 
       if (selectedCategory) {
-        where.categoryId = selectedCategory
+        filteredProducts = filteredProducts.filter(product =>
+          product.category.name.toLowerCase() === selectedCategory.toLowerCase()
+        )
       }
 
-      const data = await prisma.product.findMany({
-        where,
-        include: {
-          category: {
-            select: {
-              id: true,
-              name: true,
-            },
-          },
-          location: {
-            select: {
-              id: true,
-              warehouseCode: true,
-              aisle: true,
-              rack: true,
-              shelf: true,
-              bin: true,
-            },
-          },
-        },
-        orderBy: {
-          name: 'asc',
-        },
-      })
-
-      const formattedData: ProductWithRelations[] = data.map(item => ({
-        ...item,
-        buyPrice: Number(item.buyPrice),
-      }))
-
-      setProducts(formattedData)
+      setProducts(filteredProducts)
     } catch (error) {
       console.error('Error fetching products:', error)
     } finally {
@@ -92,12 +669,15 @@ export default function WarehousePage() {
 
   const fetchCategories = async () => {
     try {
-      const data = await prisma.category.findMany({
-        orderBy: {
-          name: 'asc',
-        },
-      })
-      setCategories(data)
+      // Mock categories for testing
+      const mockCategories = [
+        { id: 'electronics', name: 'Electronics' },
+        { id: 'furniture', name: 'Furniture' },
+        { id: 'office-supplies', name: 'Office Supplies' },
+        { id: 'appliances', name: 'Appliances' },
+        { id: 'security', name: 'Security' }
+      ]
+      setCategories(mockCategories)
     } catch (error) {
       console.error('Error fetching categories:', error)
     }
@@ -105,16 +685,19 @@ export default function WarehousePage() {
 
   const fetchLocations = async () => {
     try {
-      const data = await prisma.location.findMany({
-        orderBy: [
-          { warehouseCode: 'asc' },
-          { aisle: 'asc' },
-          { rack: 'asc' },
-          { shelf: 'asc' },
-          { bin: 'asc' },
-        ],
-      })
-      setLocations(data)
+      // Mock locations for testing
+      const mockLocations = []
+      for (let i = 1; i <= 20; i++) {
+        mockLocations.push({
+          id: `loc${i}`,
+          warehouseCode: 'WH-01',
+          aisle: String.fromCharCode(65 + Math.floor((i - 1) / 4)), // A, B, C, D, E
+          rack: Math.floor(((i - 1) % 4) / 2) + 1,
+          shelf: ((i - 1) % 2) + 1,
+          bin: '1'
+        })
+      }
+      setLocations(mockLocations)
     } catch (error) {
       console.error('Error fetching locations:', error)
     }

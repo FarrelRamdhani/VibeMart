@@ -1,5 +1,4 @@
 import bcrypt from 'bcryptjs'
-import jwt from 'jsonwebtoken'
 import { UserRole } from '@prisma/client'
 
 export interface User {
@@ -14,7 +13,7 @@ export interface LoginCredentials {
   role: UserRole
 }
 
-const JWT_SECRET = 'vibemart-jwt-secret-key-2024'
+const JWT_SECRET = '48fab8c24e990345483208d8270fab79809803bdd006dcdf20353f5eaa95a0cf352ed519439e3c5b53779b1ebf90ca2932db251d6c6fb3c95383419e29f238b4'
 
 export async function authenticateUser(username: string, password: string): Promise<User | null> {
   // Hardcoded credentials for testing
@@ -57,24 +56,46 @@ export async function authenticateUser(username: string, password: string): Prom
 }
 
 export function generateToken(user: User): string {
-  return jwt.sign(
-    { 
-      id: user.id,
-      username: user.username,
-      role: user.role
-    },
-    JWT_SECRET,
-    { expiresIn: '24h' }
-  )
+  // Create a simple token using base64 encoding for browser compatibility
+  const payload = {
+    id: user.id,
+    username: user.username,
+    role: user.role,
+    exp: Math.floor(Date.now() / 1000) + (24 * 60 * 60) // 24 hours expiration
+  }
+  
+  // Simple encoding - not as secure as JWT but works in browser
+  const tokenData = JSON.stringify(payload)
+  const encoded = btoa(tokenData)
+  
+  // Add a simple signature using the secret
+  const signature = btoa(encoded + JWT_SECRET)
+  
+  return `${encoded}.${signature}`
 }
 
 export function verifyToken(token: string): User | null {
   try {
-    const decoded = jwt.verify(token, JWT_SECRET) as any
+    const [encoded, signature] = token.split('.')
+    
+    // Verify signature
+    const expectedSignature = btoa(encoded + JWT_SECRET)
+    if (signature !== expectedSignature) {
+      return null
+    }
+    
+    // Decode payload
+    const payload = JSON.parse(atob(encoded))
+    
+    // Check expiration
+    if (payload.exp < Math.floor(Date.now() / 1000)) {
+      return null
+    }
+    
     return {
-      id: decoded.id,
-      username: decoded.username,
-      role: decoded.role
+      id: payload.id,
+      username: payload.username,
+      role: payload.role
     }
   } catch (error) {
     return null
