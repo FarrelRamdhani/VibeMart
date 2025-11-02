@@ -530,15 +530,9 @@ export default function CashierPage() {
       const { subtotal, taxTotal, totalAmount } = calculateTotals()
       const receiptId = uuidv4()
 
-      // Mock checkout - in production, this would update database
-      console.log('Processing checkout for receipt:', receiptId)
-      console.log('Cart items:', cart)
-      console.log('Totals:', { subtotal, taxTotal, totalAmount })
-
-      // Generate and save PDF receipt
-      const receiptData: ReceiptData = {
-        id: receiptId,
-        items: cart.map(item => ({
+      // Prepare checkout data
+      const checkoutData = {
+        cartItems: cart.map(item => ({
           productId: item.productId,
           productName: item.productName,
           productCode: item.productCode,
@@ -550,19 +544,65 @@ export default function CashierPage() {
         subtotal,
         taxTotal,
         totalAmount,
+      }
+
+      // Process checkout via API
+      const checkoutResponse = await fetch('/api/checkout', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(checkoutData),
+      })
+
+      const checkoutResult = await checkoutResponse.json()
+
+      if (!checkoutResponse.ok) {
+        throw new Error(checkoutResult.error || 'Checkout failed')
+      }
+
+      // Generate and download PDF receipt
+      const receiptData: ReceiptData = {
+        id: receiptId,
+        items: checkoutData.cartItems,
+        subtotal,
+        taxTotal,
+        totalAmount,
         createdAt: new Date(),
       }
 
-      const pdfBuffer = await generateReceiptPDF(receiptData)
-      
-      // Mock saving PDF - in production, you'd save to cloud storage
-      console.log('Receipt PDF generated:', receiptId, 'Size:', pdfBuffer.length, 'bytes')
+      // Generate PDF via API
+      const pdfResponse = await fetch('/api/receipt', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(receiptData),
+      })
 
-      message.success('Checkout completed successfully!')
+      if (!pdfResponse.ok) {
+        throw new Error('Failed to generate receipt')
+      }
+
+      // Download PDF
+      const pdfBlob = await pdfResponse.blob()
+      const pdfUrl = URL.createObjectURL(pdfBlob)
+      const link = document.createElement('a')
+      link.href = pdfUrl
+      link.download = `receipt_${receiptId}.pdf`
+      document.body.appendChild(link)
+      link.click()
+      document.body.removeChild(link)
+      URL.revokeObjectURL(pdfUrl)
+
+      message.success(`Checkout completed! Receipt #${receiptId} downloaded.`)
       setCart([])
+      
+      // Refresh products to show updated stock
+      fetchProducts()
     } catch (error) {
       console.error('Checkout error:', error)
-      message.error('Checkout failed. Please try again.')
+      message.error(`Checkout failed: ${error}`)
     } finally {
       setCheckoutLoading(false)
     }

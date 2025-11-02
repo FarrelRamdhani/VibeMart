@@ -12,6 +12,11 @@ const { RangePicker } = DatePicker
 
 export default function BookkeepingPage() {
   const [transactions, setTransactions] = useState<TransactionLog[]>([])
+  const [summary, setSummary] = useState({
+    totalRevenue: 0,
+    totalItemsSold: 0,
+    totalTransactions: 0,
+  })
   const [loading, setLoading] = useState(false)
   const [dateRange, setDateRange] = useState<[dayjs.Dayjs, dayjs.Dayjs] | null>(null)
 
@@ -22,32 +27,30 @@ export default function BookkeepingPage() {
   const fetchTransactions = async () => {
     setLoading(true)
     try {
-      const where = dateRange ? {
-        createdAt: {
-          gte: dateRange[0].toDate(),
-          lte: dateRange[1].toDate(),
-        },
-      } : {}
+      const params = new URLSearchParams()
+      if (dateRange) {
+        params.append('startDate', dateRange[0].format('YYYY-MM-DD'))
+        params.append('endDate', dateRange[1].format('YYYY-MM-DD'))
+      }
+      params.append('page', '1')
+      params.append('limit', '100')
 
-      const data = await prisma.transaction.findMany({
-        where,
-        include: {
-          product: {
-            select: {
-              name: true,
-            },
-          },
-        },
-        orderBy: {
-          createdAt: 'desc',
-        },
-      })
+      const response = await fetch(`/api/sales?${params.toString()}`)
+      const data = await response.json()
 
-      const formattedData: TransactionLog[] = data.map(item => ({
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to fetch sales data')
+      }
+
+      // Transform sales data to transaction format
+      const formattedData: TransactionLog[] = data.sales.map((item: any) => ({
         id: item.id,
-        type: item.type,
-        description: item.description,
-        amount: Number(item.amount),
+        type: 'SALE',
+        description: `Sale of ${item.productNameSnapshot} (${item.quantity} units)`,
+        amount: Number(item.sellTotal),
+        createdAt: item.sellDate,
+        productName: item.productNameSnapshot,
+        quantity: item.quantity,
         productId: item.productId || undefined,
         quantity: item.quantity || undefined,
         createdAt: item.createdAt,
@@ -55,6 +58,7 @@ export default function BookkeepingPage() {
       }))
 
       setTransactions(formattedData)
+      setSummary(data.summary)
     } catch (error) {
       console.error('Error fetching transactions:', error)
     } finally {
@@ -149,6 +153,35 @@ export default function BookkeepingPage() {
       <Title level={2}>Bookkeeping</Title>
       
       <Space direction="vertical" size="large" style={{ width: '100%' }}>
+        {/* Summary Statistics */}
+        <Card>
+          <Row gutter={16}>
+            <Col span={8}>
+              <Statistic
+                title="Total Revenue"
+                value={summary.totalRevenue}
+                precision={2}
+                valueStyle={{ color: '#3f8600' }}
+                prefix="$"
+              />
+            </Col>
+            <Col span={8}>
+              <Statistic
+                title="Items Sold"
+                value={summary.totalItemsSold}
+                valueStyle={{ color: '#1890ff' }}
+              />
+            </Col>
+            <Col span={8}>
+              <Statistic
+                title="Transactions"
+                value={summary.totalTransactions}
+                valueStyle={{ color: '#722ed1' }}
+              />
+            </Col>
+          </Row>
+        </Card>
+
         <Card>
           <Space>
             <RangePicker onChange={(dates) => setDateRange(dates as [dayjs.Dayjs, dayjs.Dayjs] | null)} />
