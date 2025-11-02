@@ -21,7 +21,10 @@ export default function LoginPage() {
   const onFinish = async (values: { username: string; password: string; role: UserRole }) => {
     setLoading(true)
     try {
+      console.log('Login attempt:', values)
       const user = await authenticateUser(values.username, values.password)
+      
+      console.log('Authentication result:', user)
       
       if (user && user.role === values.role) {
         const token = generateToken(user)
@@ -30,9 +33,14 @@ export default function LoginPage() {
         message.success('Login successful!')
         router.push('/dashboard')
       } else {
-        message.error('Invalid credentials or role mismatch')
+        if (!user) {
+          message.error('Invalid username or password')
+        } else {
+          message.error('Role mismatch')
+        }
       }
     } catch (error) {
+      console.error('Login error:', error)
       message.error('Login failed. Please try again.')
     } finally {
       setLoading(false)
@@ -41,7 +49,7 @@ export default function LoginPage() {
 
   return (
     <div className="login-container">
-      <Card className="login-card" title="VibeMart Login" bordered={false}>
+      <Card className="login-card" title="VibeMart Login" variant="borderless">
         <Form
           name="login"
           onFinish={onFinish}

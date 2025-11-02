@@ -14,36 +14,45 @@ export interface LoginCredentials {
   role: UserRole
 }
 
-const JWT_SECRET = process.env.JWT_SECRET || 'fallback-secret'
+const JWT_SECRET = 'vibemart-jwt-secret-key-2024'
 
 export async function authenticateUser(username: string, password: string): Promise<User | null> {
+  // Hardcoded credentials for testing
   const credentials = [
     {
-      username: process.env.BOOKKEEPER_CREDENTIALS?.split(':')[0] || 'bookkeeper',
-      password: process.env.BOOKKEEPER_CREDENTIALS?.split(':')[1] || 'password123',
+      username: 'bookkeeper',
+      password: 'password123',
       role: UserRole.BOOKKEEPER
     },
     {
-      username: process.env.STORE_CLERK_CREDENTIALS?.split(':')[0] || 'storeclerk',
-      password: process.env.STORE_CLERK_CREDENTIALS?.split(':')[1] || 'password123',
+      username: 'storeclerk',
+      password: 'password123',
       role: UserRole.STORE_CLERK
     },
     {
-      username: process.env.WAREHOUSE_CLERK_CREDENTIALS?.split(':')[0] || 'warehouseclerk',
-      password: process.env.WAREHOUSE_CLERK_CREDENTIALS?.split(':')[1] || 'password123',
+      username: 'warehouseclerk',
+      password: 'password123',
       role: UserRole.WAREHOUSE_CLERK
     }
   ]
 
+  console.log('Attempting login with:', { username, password })
+  
   const user = credentials.find(cred => cred.username === username)
   
   if (!user) {
+    console.log('User not found:', username)
     return null
   }
 
-  const isPasswordValid = await bcrypt.compare(password, await bcrypt.hash(user.password, 10))
+  console.log('Found user:', user)
+  console.log('Password comparison:', { input: password, expected: user.password, match: password === user.password })
+
+  // Direct password comparison for demo purposes
+  const isPasswordValid = password === user.password
   
   if (isPasswordValid) {
+    console.log('Authentication successful')
     return {
       id: user.username,
       username: user.username,
@@ -51,6 +60,7 @@ export async function authenticateUser(username: string, password: string): Prom
     }
   }
 
+  console.log('Password validation failed')
   return null
 }
 
