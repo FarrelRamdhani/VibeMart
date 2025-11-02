@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { prisma } from '@/lib/prisma'
+import { MockDatabase } from '@/lib/mock-database'
 
 export async function GET(request: NextRequest) {
   try {
@@ -9,65 +9,45 @@ export async function GET(request: NextRequest) {
     const startDate = searchParams.get('startDate')
     const endDate = searchParams.get('endDate')
 
-    const where: any = {}
+    const startDateFilter = startDate ? new Date(startDate) : undefined
+    const endDateFilter = endDate ? new Date(endDate) : undefined
 
-    if (startDate || endDate) {
-      where.sellDate = {}
-      if (startDate) {
-        where.sellDate.gte = new Date(startDate)
-      }
-      if (endDate) {
-        where.sellDate.lte = new Date(endDate)
-      }
-    }
-
-    const [sales, total] = await Promise.all([
-      prisma.sale.findMany({
-        where,
-        include: {
-          product: {
-            select: {
-              name: true,
-              manufacturer: true,
-              category: {
-                select: {
-                  name: true,
-                },
-              },
-            },
-          },
-        },
-        orderBy: {
-          sellDate: 'desc',
-        },
-        skip: (page - 1) * limit,
-        take: limit,
-      }),
-      prisma.sale.count({ where }),
+    const [sales, summary] = await Promise.all([
+      MockDatabase.getSales(limit, (page - 1) * limit),
+      MockDatabase.getSalesSummary(startDateFilter, endDateFilter),
     ])
 
-    // Calculate totals
-    const totals = await prisma.sale.aggregate({
-      where,
-      _sum: {
-        sellTotal: true,
-        quantity: true,
-      },
-    })
+    // Filter sales by date range
+    let filteredSales = sales
+    if (startDateFilter || endDateFilter) {
+      filteredSales = sales.filter(sale => {
+        const saleDate = sale.sellDate
+        if (startDateFilter && saleDate < startDateFilter) return false
+        if (endDateFilter && saleDate > endDateFilter) return false
+        return true
+      })
+    }
+
+    const total = filteredSales.length
 
     return NextResponse.json({
-      sales,
+      sales: filteredSales.map(sale => ({
+        ...sale,
+        product: {
+          name: sale.productNameSnapshot,
+          manufacturer: 'Unknown', // Mock data
+          category: {
+            name: 'Unknown', // Mock data
+          },
+        },
+      })),
       pagination: {
         page,
         limit,
         total,
         pages: Math.ceil(total / limit),
       },
-      summary: {
-        totalRevenue: totals._sum.sellTotal || 0,
-        totalItemsSold: totals._sum.quantity || 0,
-        totalTransactions: total,
-      },
+      summary,
     })
   } catch (error) {
     console.error('Sales API error:', error)

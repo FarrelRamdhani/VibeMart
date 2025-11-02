@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { prisma } from '@/lib/prisma'
+import { MockDatabase } from '@/lib/mock-database'
 import { v4 as uuidv4 } from 'uuid'
 
 export async function POST(request: NextRequest) {
@@ -20,9 +20,7 @@ export async function POST(request: NextRequest) {
     for (const item of cartItems) {
       try {
         // Check if product exists and has sufficient stock
-        const product = await prisma.product.findUnique({
-          where: { id: item.productId }
-        })
+        const product = await MockDatabase.findProduct(item.productId)
 
         if (!product) {
           throw new Error(`Product ${item.productId} not found`)
@@ -32,61 +30,44 @@ export async function POST(request: NextRequest) {
           throw new Error(`Insufficient stock for ${product.name}`)
         }
 
+        const previousStock = product.inStock
+
         // Update product stock
-        const updatedProduct = await prisma.product.update({
-          where: { id: item.productId },
-          data: {
-            inStock: {
-              decrement: item.quantity,
-            },
-            // Update low stock warning if needed
-            lowStockWarning: (product.inStock - item.quantity) <= product.lowStockThreshold,
-          },
-        })
+        const updatedProduct = await MockDatabase.updateProductStock(item.productId, item.quantity)
 
         // Create sale record
-        const sale = await prisma.sale.create({
-          data: {
-            id: uuidv4(),
-            productId: item.productId,
-            productNameSnapshot: item.productName,
-            productCodeSnapshot: item.productCode,
-            sellPrice: item.sellPrice,
-            sellTax: item.sellTax,
-            sellDate: new Date(),
-            quantity: item.quantity,
-            sellTotal: item.sellTotal,
-          },
+        const sale = await MockDatabase.createSale({
+          productId: item.productId,
+          productNameSnapshot: item.productName,
+          productCodeSnapshot: item.productCode,
+          sellPrice: item.sellPrice,
+          sellTax: item.sellTax,
+          quantity: item.quantity,
+          sellTotal: item.sellTotal,
         })
 
         // Create transaction record
-        const transaction = await prisma.transaction.create({
-          data: {
-            id: uuidv4(),
-            type: 'SALE',
-            description: `Sale of ${item.productName} (${item.quantity} units)`,
-            amount: item.sellTotal,
-            productId: item.productId,
-            quantity: item.quantity,
-          },
+        const transaction = await MockDatabase.createTransaction({
+          type: 'SALE',
+          description: `Sale of ${item.productName} (${item.quantity} units)`,
+          amount: item.sellTotal,
+          productId: item.productId,
+          quantity: item.quantity,
         })
 
         // Create low stock alert if needed
         if (updatedProduct.inStock <= updatedProduct.lowStockThreshold && updatedProduct.inStock > 0) {
-          await prisma.alert.create({
-            data: {
-              id: uuidv4(),
-              productId: item.productId,
-              type: 'LOW_STOCK',
-              details: `Low stock alert for ${item.productName}. Current stock: ${updatedProduct.inStock}`,
-            },
+          await MockDatabase.createAlert({
+            productId: item.productId,
+            type: 'LOW_STOCK',
+            details: `Low stock alert for ${item.productName}. Current stock: ${updatedProduct.inStock}`,
           })
         }
 
         results.push({
           productId: item.productId,
           productName: item.productName,
-          previousStock: product.inStock,
+          previousStock,
           newStock: updatedProduct.inStock,
           saleId: sale.id,
           transactionId: transaction.id,
