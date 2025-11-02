@@ -1,0 +1,161 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(uuid())
+  username  String   @unique
+  password  String
+  role      UserRole
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("users")
+}
+
+model Category {
+  id        String   @id @default(uuid())
+  name      String
+  slug      String   @unique
+  parentId  String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  parent   Category?  @relation("CategoryHierarchy", fields: [parentId], references: [id])
+  children Category[] @relation("CategoryHierarchy")
+
+  products Product[]
+
+  @@map("categories")
+}
+
+model Location {
+  id            String   @id @default(uuid())
+  warehouseCode String
+  aisle         String
+  rack          String
+  shelf         String
+  bin           String
+  notes         String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  products Product[]
+
+  @@unique([warehouseCode, aisle, rack, shelf, bin])
+  @@map("locations")
+}
+
+model Product {
+  id                  String    @id @default(uuid())
+  name                String
+  description         String?
+  manufacturer        String
+  productCode         Int       @unique
+  codeSource          CodeSource
+  latestEntryDate     DateTime  @db.Date
+  expirationDate      DateTime? @db.Date
+  inStock             Int       @default(0)
+  categoryId          String
+  lowStockWarning     Boolean   @default(false)
+  lowStockThreshold   Int       @default(50)
+  buyPrice            Decimal
+  locationId          String
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+
+  category     Category  @relation(fields: [categoryId], references: [id])
+  location     Location  @relation(fields: [locationId], references: [id])
+  receipts     Receipt[]
+  sales        Sale[]
+  alerts       Alert[]
+
+  @@map("products")
+}
+
+model Receipt {
+  id            String   @id @default(uuid())
+  productId     String
+  quantity      Int
+  unitBuyPrice  Decimal
+  receivedDate  DateTime @db.Date
+  reference     String?
+  createdAt     DateTime @default(now())
+
+  product Product @relation(fields: [productId], references: [id])
+
+  @@map("receipts")
+}
+
+model Sale {
+  id                   String   @id @default(uuid())
+  productId            String
+  productNameSnapshot  String
+  productCodeSnapshot  Int
+  sellPrice            Decimal
+  sellTax              Decimal
+  sellDate             DateTime @db.Date
+  quantity             Int
+  sellTotal            Decimal
+  createdAt            DateTime @default(now())
+
+  product Product @relation(fields: [productId], references: [id])
+
+  @@map("sales")
+}
+
+model Alert {
+  id          String    @id @default(uuid())
+  productId   String
+  type        AlertType
+  triggeredAt DateTime  @default(now())
+  resolvedAt  DateTime?
+  details     String
+
+  product Product @relation(fields: [productId], references: [id])
+
+  @@map("alerts")
+}
+
+model Transaction {
+  id          String           @id @default(uuid())
+  type        TransactionType
+  description String
+  amount      Decimal
+  productId   String?
+  quantity    Int?
+  createdAt   DateTime         @default(now())
+
+  @@map("transactions")
+}
+
+enum UserRole {
+  BOOKKEEPER
+  STORE_CLERK
+  WAREHOUSE_CLERK
+}
+
+enum CodeSource {
+  AUTO
+  MANUAL
+}
+
+enum AlertType {
+  LOW_STOCK
+}
+
+enum TransactionType {
+  SALE
+  PURCHASE
+  INVENTORY_ADJUSTMENT
+  EXPENSE
+  REVENUE
+}

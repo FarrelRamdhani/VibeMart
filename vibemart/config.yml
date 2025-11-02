@@ -1,0 +1,20 @@
+# VibeMart Configuration File
+
+company:
+  name: "VibeMart Retail Store"
+  address: "123 Main Street, City, State 12345"
+  phone: "+1 (555) 123-4567"
+  email: "info@vibemart.com"
+  website: "www.vibemart.com"
+
+receipt:
+  header: "VIBE MART"
+  footer: "Thank you for shopping with us!"
+  tax_rate: 0.06  # 6% sales tax
+  currency: "USD"
+  currency_symbol: "$"
+
+business:
+  default_low_stock_threshold: 50
+  auto_product_code_start: 100000
+  warehouse_code: "WH-01"

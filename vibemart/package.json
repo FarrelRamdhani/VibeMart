@@ -1,0 +1,44 @@
+{
+  "name": "vibemart",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "db:push": "prisma db push",
+    "db:studio": "prisma studio",
+    "db:generate": "prisma generate"
+  },
+  "dependencies": {
+    "@ant-design/icons": "^5.2.6",
+    "@ant-design/nextjs-registry": "^1.0.0",
+    "@prisma/client": "^5.7.1",
+    "antd": "^5.12.8",
+    "bcryptjs": "^2.4.3",
+    "js-yaml": "^4.1.0",
+    "jsonwebtoken": "^9.0.2",
+    "next": "14.0.4",
+    "puppeteer": "^21.6.1",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "uuid": "^9.0.1"
+  },
+  "devDependencies": {
+    "@types/bcryptjs": "^2.4.6",
+    "@types/jsonwebtoken": "^9.0.5",
+    "@types/node": "^20.10.5",
+    "@types/react": "^18.2.45",
+    "@types/react-dom": "^18.2.18",
+    "@types/uuid": "^9.0.7",
+    "@types/js-yaml": "^4.0.9",
+    "autoprefixer": "^10.4.16",
+    "eslint": "^8.56.0",
+    "eslint-config-next": "14.0.4",
+    "postcss": "^8.4.32",
+    "prisma": "^5.7.1",
+    "tailwindcss": "^3.3.6",
+    "typescript": "^5.3.3"
+  }
+}
